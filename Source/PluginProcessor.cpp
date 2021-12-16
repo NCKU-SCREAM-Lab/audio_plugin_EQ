@@ -88,6 +88,7 @@ void EQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    singleChannelSampleFifo.prepare(samplesPerBlock);
 }
 
 void EQAudioProcessor::releaseResources()
@@ -149,6 +150,7 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
 
         // ..do something to the data...
     }
+    singleChannelSampleFifo.update(buffer);
 }
 
 bool EQAudioProcessor::hasEditor() const

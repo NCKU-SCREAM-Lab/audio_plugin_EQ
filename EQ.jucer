@@ -4,6 +4,10 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="l5LAPJ" name="EQ">
     <GROUP id="{3B65296A-A8F1-1043-3BA3-2791AED55EE2}" name="Source">
+      <FILE id="TRzHMX" name="FrequencySpectrum.cpp" compile="1" resource="0"
+            file="Source/FrequencySpectrum.cpp"/>
+      <FILE id="eb5Jam" name="FrequencySpectrum.h" compile="0" resource="0"
+            file="Source/FrequencySpectrum.h"/>
       <FILE id="rlZSkM" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="O0sNtd" name="PluginProcessor.h" compile="0" resource="0"
@@ -11,6 +15,7 @@
       <FILE id="FueAl5" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="gxaGL2" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="G6GUZz" name="FIFO.h" compile="0" resource="0" file="Source/FIFO.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
@@ -33,6 +38,7 @@
         <MODULEPATH id="juce_graphics" path="D:/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="D:/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="D:/JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="D:/JUCE/modules"/>
       </MODULEPATHS>
     </VS2019>
   </EXPORTFORMATS>
@@ -46,6 +52,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

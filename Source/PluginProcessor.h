@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "FIFO.h"
 
 class EQAudioProcessor : public juce::AudioProcessor
 {
@@ -36,6 +37,13 @@ public:
     void getStateInformation(juce::MemoryBlock &destData) override;
     void setStateInformation(const void *data, int sizeInBytes) override;
 
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> &getSingleChannelSampleFifo()
+    {
+        return singleChannelSampleFifo;
+    }
+
 private:
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor)
 };
