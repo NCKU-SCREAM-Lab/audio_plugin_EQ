@@ -3,6 +3,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "FrequencySpectrum.h"
+#include "Sliders/SliderContainerWithoutGain.h"
+#include "Sliders/SliderContainerWithGain.h"
 
 class EQAudioProcessorEditor : public juce::AudioProcessorEditor
 {
@@ -16,8 +18,10 @@ public:
 private:
     EQAudioProcessor& audioProcessor;
     FrequencySpectrum spectrum;
+    SliderContainerWithoutGain testSliderWithoutGain;
+    SliderContainerWithGain testSliderWithGain;
 
-    std::vector<juce::Component *> subcomponents { &spectrum };
+    std::vector<juce::Component *> subcomponents { &spectrum, &testSliderWithoutGain, &testSliderWithGain };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessorEditor)
 };

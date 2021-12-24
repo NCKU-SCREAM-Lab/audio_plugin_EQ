@@ -42,6 +42,8 @@ public:
         return singleChannelSampleFifo;
     }
 
+    juce::AudioProcessorValueTreeState tree;
+
 private:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
 

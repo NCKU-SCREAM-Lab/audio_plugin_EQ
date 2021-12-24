@@ -3,14 +3,56 @@
 
 EQAudioProcessor::EQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-    : AudioProcessor(BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput("Input", juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                    )
+    : AudioProcessor(
+        BusesProperties()
+        #if ! JucePlugin_IsMidiEffect
+            #if ! JucePlugin_IsSynth
+                .withInput("Input", juce::AudioChannelSet::stereo(), true)
+            #endif
+            .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+        #endif
+    ), tree(*this, nullptr, "PARAM", {
+        std::make_unique<juce::AudioParameterFloat>(
+            "test1_f", "test1_F",
+            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::String(),
+            juce::AudioProcessorParameter::genericParameter,
+            [](float value, int){ return juce::String(value); },
+            [](juce::String text){ return text.getFloatValue(); }
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "test1_q", "test1_Q",
+            juce::NormalisableRange<float>(0.1f, 2.0f, 0.1f), 1.0f,
+            juce::String(),
+            juce::AudioProcessorParameter::genericParameter,
+            [](float value, int){ return juce::String(value); },
+            [](juce::String text){ return text.getFloatValue(); }
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "test2_f", "test2_F",
+            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::String(),
+            juce::AudioProcessorParameter::genericParameter,
+            [](float value, int){ return juce::String(value); },
+            [](juce::String text){ return text.getFloatValue(); }
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "test2_q", "test2_Q",
+            juce::NormalisableRange<float>(0.1f, 2.0f, 0.1f), 1.0f,
+            juce::String(),
+            juce::AudioProcessorParameter::genericParameter,
+            [](float value, int){ return juce::String(value); },
+            [](juce::String text){ return text.getFloatValue(); }
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "test2_gain", "test_Gain",
+            juce::NormalisableRange<float>(1.0f, 10.0f, 0.5f), 2.0f,
+            juce::String(),
+            juce::AudioProcessorParameter::genericParameter,
+            [](float value, int){ return juce::String(value); },
+            [](juce::String text){ return text.getFloatValue(); }
+        )
+    })
 #endif
 {
 
