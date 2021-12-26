@@ -6,14 +6,9 @@
     <GROUP id="{3B65296A-A8F1-1043-3BA3-2791AED55EE2}" name="Source">
       <GROUP id="{610F44D0-B408-4D2B-71B5-31455220440A}" name="Sliders">
         <FILE id="Erw1Jd" name="MyLookAndFeel.h" compile="0" resource="0" file="Source/Sliders/MyLookAndFeel.h"/>
-        <FILE id="flMehw" name="Slider.cpp" compile="1" resource="0" file="Source/Sliders/Slider.cpp"/>
         <FILE id="PjtKHg" name="Slider.h" compile="0" resource="0" file="Source/Sliders/Slider.h"/>
-        <FILE id="rW4byZ" name="SliderContainerWithGain.cpp" compile="1" resource="0"
-              file="Source/Sliders/SliderContainerWithGain.cpp"/>
         <FILE id="dWIZcN" name="SliderContainerWithGain.h" compile="0" resource="0"
               file="Source/Sliders/SliderContainerWithGain.h"/>
-        <FILE id="dygb4Q" name="SliderContainerWithoutGain.cpp" compile="1"
-              resource="0" file="Source/Sliders/SliderContainerWithoutGain.cpp"/>
         <FILE id="W1NYK2" name="SliderContainerWithoutGain.h" compile="0" resource="0"
               file="Source/Sliders/SliderContainerWithoutGain.h"/>
       </GROUP>

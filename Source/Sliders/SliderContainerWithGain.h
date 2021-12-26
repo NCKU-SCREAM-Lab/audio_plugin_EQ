@@ -17,11 +17,39 @@
 class SliderContainerWithGain : public juce::Component
 {
 public:
-    SliderContainerWithGain(EQAudioProcessor &, juce::String);
-    ~SliderContainerWithGain() override;
+    SliderContainerWithGain(EQAudioProcessor &p, juce::String filterName)
+        : audioProcessor(p),
+          fSlider(p, "f", filterName),
+          QSlider(p, "q", filterName),
+          gainSlider(p, "gain", filterName)
+    {    
+        for (auto &slider : sliders) {
+            addAndMakeVisible(slider);
+        }
+    }
 
-    void paint(juce::Graphics &) override;
-    void resized() override;
+    ~SliderContainerWithGain() override
+    {
+
+    }
+
+    void paint(juce::Graphics &g) override
+    {
+        g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+    }
+
+    void resized() override
+    {
+        juce::FlexBox flexBox;
+        for (auto &slider : sliders) {
+            juce::FlexItem item {*slider};
+            flexBox.items.add(item.withFlex(1.0));
+        }
+        flexBox.performLayout(getLocalBounds());
+        for (auto &slider : sliders) {
+            slider->setBounds(slider->getBounds().reduced(5));
+        }
+    }
 
 private:
     EQAudioProcessor &audioProcessor;
