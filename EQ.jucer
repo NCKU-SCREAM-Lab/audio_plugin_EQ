@@ -4,13 +4,21 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="l5LAPJ" name="EQ">
     <GROUP id="{3B65296A-A8F1-1043-3BA3-2791AED55EE2}" name="Source">
-      <GROUP id="{610F44D0-B408-4D2B-71B5-31455220440A}" name="Sliders">
-        <FILE id="Erw1Jd" name="MyLookAndFeel.h" compile="0" resource="0" file="Source/Sliders/MyLookAndFeel.h"/>
-        <FILE id="PjtKHg" name="Slider.h" compile="0" resource="0" file="Source/Sliders/Slider.h"/>
-        <FILE id="dWIZcN" name="SliderContainerWithGain.h" compile="0" resource="0"
-              file="Source/Sliders/SliderContainerWithGain.h"/>
-        <FILE id="W1NYK2" name="SliderContainerWithoutGain.h" compile="0" resource="0"
-              file="Source/Sliders/SliderContainerWithoutGain.h"/>
+      <GROUP id="{0EC2D535-9A15-04A3-CD53-B744F49553F7}" name="Bands">
+        <GROUP id="{0B6B3EB7-4DD6-8F18-5D0D-4F0C6F232448}" name="Sliders">
+          <FILE id="Xa00wg" name="MyLookAndFeel.h" compile="0" resource="0" file="Source/Bands/Sliders/MyLookAndFeel.h"/>
+          <FILE id="vl3u7O" name="Slider.h" compile="0" resource="0" file="Source/Bands/Sliders/Slider.h"/>
+          <FILE id="aV7TGu" name="SliderContainerWithGain.h" compile="0" resource="0"
+                file="Source/Bands/Sliders/SliderContainerWithGain.h"/>
+          <FILE id="a7mcSk" name="SliderContainerWithoutGain.h" compile="0" resource="0"
+                file="Source/Bands/Sliders/SliderContainerWithoutGain.h"/>
+        </GROUP>
+        <FILE id="uL58ET" name="HighPassBand.h" compile="0" resource="0" file="Source/Bands/HighPassBand.h"/>
+        <FILE id="Y8lXyc" name="HighShelfBand.h" compile="0" resource="0" file="Source/Bands/HighShelfBand.h"/>
+        <FILE id="Fr95iy" name="LowPassBand.h" compile="0" resource="0" file="Source/Bands/LowPassBand.h"/>
+        <FILE id="Lz7Dzy" name="LowShelfBand.h" compile="0" resource="0" file="Source/Bands/LowShelfBand.h"/>
+        <FILE id="KIcOC0" name="NotchBand.h" compile="0" resource="0" file="Source/Bands/NotchBand.h"/>
+        <FILE id="vRvvfT" name="PeakBand.h" compile="0" resource="0" file="Source/Bands/PeakBand.h"/>
       </GROUP>
       <FILE id="TRzHMX" name="FrequencySpectrum.cpp" compile="1" resource="0"
             file="Source/FrequencySpectrum.cpp"/>

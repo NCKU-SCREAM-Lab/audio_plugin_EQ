@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "../PluginProcessor.h"
+#include "../../PluginProcessor.h"
 #include "MyLookAndFeel.h"
 
 class Slider : public juce::Component

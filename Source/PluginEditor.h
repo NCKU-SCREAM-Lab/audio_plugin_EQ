@@ -3,8 +3,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "FrequencySpectrum.h"
-#include "Sliders/SliderContainerWithoutGain.h"
-#include "Sliders/SliderContainerWithGain.h"
+#include "Bands/Sliders/SliderContainerWithoutGain.h"
+#include "Bands/Sliders/SliderContainerWithGain.h"
 
 class EQAudioProcessorEditor : public juce::AudioProcessorEditor
 {
