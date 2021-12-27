@@ -306,12 +306,7 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto *channelData = buffer.getWritePointer(channel);
-
-        // ..do something to the data...
-    }
+    updateParameters();
     singleChannelSampleFifo.update(buffer);
 }
 
@@ -342,4 +337,97 @@ void EQAudioProcessor::setStateInformation(const void *data, int sizeInBytes)
 juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
 {
     return new EQAudioProcessor();
+}
+
+void EQAudioProcessor::updateParameters()
+{
+    bool isUpdated = false;
+    if (f[0] != tree.getRawParameterValue("lowpass1_f")->load()) {
+        f[0] = tree.getRawParameterValue("lowpass1_f")->load();
+        isUpdated = true;
+    }
+    if (Q[0] != tree.getRawParameterValue("lowpass1_q")->load()) {
+        Q[0] = tree.getRawParameterValue("lowpass1_q")->load();
+        isUpdated = true;
+    }
+    if (f[1] != tree.getRawParameterValue("highpass1_f")->load()) {
+        f[1] = tree.getRawParameterValue("highpass1_f")->load();
+        isUpdated = true;
+    }
+    if (Q[1] != tree.getRawParameterValue("highpass1_q")->load()) {
+        Q[1] = tree.getRawParameterValue("highpass1_q")->load();
+        isUpdated = true;
+    }
+    if (f[2] != tree.getRawParameterValue("notch1_f")->load()) {
+        f[2] = tree.getRawParameterValue("notch1_f")->load();
+        isUpdated = true;
+    }
+    if (Q[2] != tree.getRawParameterValue("notch1_q")->load()) {
+        Q[2] = tree.getRawParameterValue("notch1_q")->load();
+        isUpdated = true;
+    }
+    if (f[3] != tree.getRawParameterValue("notch2_f")->load()) {
+        f[3] = tree.getRawParameterValue("notch2_f")->load();
+        isUpdated = true;
+    }
+    if (Q[3] != tree.getRawParameterValue("notch2_q")->load()) {
+        Q[3] = tree.getRawParameterValue("notch2_q")->load();
+        isUpdated = true;
+    }
+    if (f[4] != tree.getRawParameterValue("lowshelf1_f")->load()) {
+        f[4] = tree.getRawParameterValue("lowshelf1_f")->load();
+        isUpdated = true;
+    }
+    if (Q[4] != tree.getRawParameterValue("lowshelf1_q")->load()) {
+        Q[4] = tree.getRawParameterValue("lowshelf1_q")->load();
+        isUpdated = true;
+    }
+    if (gain[0] != tree.getRawParameterValue("lowshelf1_gain")->load()) {
+        gain[0] = tree.getRawParameterValue("lowshelf1_gain")->load();
+        isUpdated = true;
+    }
+    if (f[5] != tree.getRawParameterValue("highshelf1_f")->load()) {
+        f[5] = tree.getRawParameterValue("highshelf1_f")->load();
+        isUpdated = true;
+    }
+    if (Q[5] != tree.getRawParameterValue("highshelf1_q")->load()) {
+        Q[5] = tree.getRawParameterValue("highshelf1_q")->load();
+        isUpdated = true;
+    }
+    if (gain[1] != tree.getRawParameterValue("highshelf1_gain")->load()) {
+        gain[1] = tree.getRawParameterValue("highshelf1_gain")->load();
+        isUpdated = true;
+    }
+    if (f[6] != tree.getRawParameterValue("peak1_f")->load()) {
+        f[6] = tree.getRawParameterValue("peak1_f")->load();
+        isUpdated = true;
+    }
+    if (Q[6] != tree.getRawParameterValue("peak1_q")->load()) {
+        Q[6] = tree.getRawParameterValue("peak1_q")->load();
+        isUpdated = true;
+    }
+    if (gain[2] != tree.getRawParameterValue("peak1_gain")->load()) {
+        gain[2] = tree.getRawParameterValue("peak1_gain")->load();
+        isUpdated = true;
+    }
+    if (f[7] != tree.getRawParameterValue("peak2_f")->load()) {
+        f[7] = tree.getRawParameterValue("peak2_f")->load();
+        isUpdated = true;
+    }
+    if (Q[7] != tree.getRawParameterValue("peak2_q")->load()) {
+        Q[7] = tree.getRawParameterValue("peak2_q")->load();
+        isUpdated = true;
+    }
+    if (gain[3] != tree.getRawParameterValue("peak2_gain")->load()) {
+        gain[3] = tree.getRawParameterValue("peak2_gain")->load();
+        isUpdated = true;
+    }
+
+    if (isUpdated)
+        genFilter();
+}
+
+void EQAudioProcessor::genFilter()
+{
+
 }

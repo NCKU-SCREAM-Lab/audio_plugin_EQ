@@ -47,5 +47,13 @@ public:
 private:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor)
+    /* Order: [lowpass1, highpass1, notch1, notch2, ]lowshelf1, highshelf1, peak1, peak2 */
+    std::vector<int> f { 0, 0, 0, 0, 0, 0, 0, 0 };
+    std::vector<float> Q { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+    std::vector<float> gain { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    void updateParameters();
+    void genFilter();
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor);
 };
