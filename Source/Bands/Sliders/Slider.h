@@ -22,7 +22,7 @@ public:
     {
         setLookAndFeel(&lnf);
         slider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
-        slider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, slider.getTextBoxWidth(), slider.getTextBoxHeight());
+        slider.setTextBoxStyle(juce::Slider::TextBoxRight, true, slider.getTextBoxWidth(), slider.getTextBoxHeight());
         label.setText(labelName, juce::dontSendNotification);
         label.setJustificationType(juce::Justification::centred);
         attachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(
@@ -45,8 +45,13 @@ public:
     void resized() override
     {
         auto area = getLocalBounds();
-        label.setBounds(area.removeFromTop(15));
-        slider.setBounds(area.reduced(4));
+        juce::FlexBox flexbox;
+        flexbox.flexDirection = juce::FlexBox::Direction::row;
+        flexbox.items.add(juce::FlexItem(label).withFlex(1.0f));
+        flexbox.items.add(juce::FlexItem(slider).withFlex(2.0f));
+        flexbox.performLayout(area.reduced(10));
+        // label.setBounds(area.removeFromTop(15));
+        // slider.setBounds(area.reduced(4));
     }
 
 private:

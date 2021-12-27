@@ -34,18 +34,24 @@ void EQAudioProcessorEditor::paint(juce::Graphics &g)
 void EQAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds();
-    juce::FlexBox flexBox;
-    flexBox.flexDirection = juce::FlexBox::Direction::column;
-    // flexBox.items.add(juce::FlexItem(spectrum).withFlex(3.0f));
-    flexBox.items.add(juce::FlexItem(lowpass1).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(highpass1).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(notch1).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(notch2).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(lowshelf1).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(highshelf1).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(peak1).withFlex(1.0f));
-    flexBox.items.add(juce::FlexItem(peak2).withFlex(1.0f));
-    flexBox.performLayout(area.reduced(10));
+    juce::FlexBox main, bandContainer1, bandContainer2;
+    bandContainer1.flexDirection = juce::FlexBox::Direction::row;
+    bandContainer1.items.add(juce::FlexItem(lowpass1).withFlex(1.0f));
+    bandContainer1.items.add(juce::FlexItem(highpass1).withFlex(1.0f));
+    bandContainer1.items.add(juce::FlexItem(notch1).withFlex(1.0f));
+    bandContainer1.items.add(juce::FlexItem(notch2).withFlex(1.0f));
+    bandContainer1.performLayout(area.reduced(10));
+    bandContainer2.flexDirection = juce::FlexBox::Direction::row;
+    bandContainer2.items.add(juce::FlexItem(lowshelf1).withFlex(1.0f));
+    bandContainer2.items.add(juce::FlexItem(highshelf1).withFlex(1.0f));
+    bandContainer2.items.add(juce::FlexItem(peak1).withFlex(1.0f));
+    bandContainer2.items.add(juce::FlexItem(peak2).withFlex(1.0f));
+    bandContainer2.performLayout(area.reduced(10));
+    main.flexDirection = juce::FlexBox::Direction::column;
+    main.items.add(juce::FlexItem(spectrum).withFlex(3.0f));
+    main.items.add(juce::FlexItem(bandContainer1).withFlex(1.0f));
+    main.items.add(juce::FlexItem(bandContainer2).withFlex(1.5f));
+    main.performLayout(area.reduced(10));
     for (auto &subcomponent : subcomponents) {
         subcomponent->setBounds(subcomponent->getBounds().reduced(3));
     }

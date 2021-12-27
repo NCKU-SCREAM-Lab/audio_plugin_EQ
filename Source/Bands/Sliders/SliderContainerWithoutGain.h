@@ -39,12 +39,13 @@ public:
 
     void resized() override
     {
-        juce::FlexBox flexBox;
+        juce::FlexBox flexbox;
+        flexbox.flexDirection = juce::FlexBox::Direction::column;
         for (auto &slider : sliders) {
             juce::FlexItem item {*slider};
-            flexBox.items.add(item.withFlex(1.0));
+            flexbox.items.add(item.withFlex(1.0));
         }
-        flexBox.performLayout(getLocalBounds());
+        flexbox.performLayout(getLocalBounds());
         for (auto &slider : sliders) {
             slider->setBounds(slider->getBounds().reduced(5));
         }
