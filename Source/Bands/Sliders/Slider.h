@@ -17,7 +17,7 @@
 class Slider : public juce::Component
 {
 public:
-    Slider(EQAudioProcessor &p, juce::String labelName, juce::String filterName)
+    Slider(EQAudioProcessor &p, juce::String labelName, juce::String filterID)
         : audioProcessor(p)
     {
         setLookAndFeel(&lnf);
@@ -26,7 +26,7 @@ public:
         label.setText(labelName, juce::dontSendNotification);
         label.setJustificationType(juce::Justification::centred);
         attachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(
-            audioProcessor.tree, juce::String{filterName}.toLowerCase() + "_" + juce::String{labelName}.toLowerCase(), slider
+            audioProcessor.tree, juce::String{filterID} + "_" + juce::String{labelName}.toLowerCase(), slider
         ));
         addAndMakeVisible(slider);
         addAndMakeVisible(label);
