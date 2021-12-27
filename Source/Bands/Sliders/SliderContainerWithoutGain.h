@@ -35,6 +35,8 @@ public:
     void paint(juce::Graphics &g) override
     {
         g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+        g.setColour(juce::Colours::grey);
+        g.drawRoundedRectangle(getLocalBounds().toFloat(), 3, 3);
     }
 
     void resized() override
@@ -47,7 +49,7 @@ public:
         }
         flexbox.performLayout(getLocalBounds());
         for (auto &slider : sliders) {
-            slider->setBounds(slider->getBounds().reduced(5));
+            slider->setBounds(slider->getBounds().reduced(3));
         }
     }
 

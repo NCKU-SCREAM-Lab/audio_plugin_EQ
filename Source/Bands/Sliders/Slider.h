@@ -50,8 +50,6 @@ public:
         flexbox.items.add(juce::FlexItem(label).withFlex(1.0f));
         flexbox.items.add(juce::FlexItem(slider).withFlex(2.0f));
         flexbox.performLayout(area.reduced(10));
-        // label.setBounds(area.removeFromTop(15));
-        // slider.setBounds(area.reduced(4));
     }
 
 private:

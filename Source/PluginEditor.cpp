@@ -14,7 +14,7 @@ EQAudioProcessorEditor::EQAudioProcessorEditor(EQAudioProcessor &p)
       peak1(p, "Peak", 1),
       peak2(p, "Peak", 2)
 {
-    setSize(600, 600);
+    setSize(600, 750);
 
     for (auto &subcomponent : subcomponents) {
         addAndMakeVisible(subcomponent);
@@ -48,9 +48,9 @@ void EQAudioProcessorEditor::resized()
     bandContainer2.items.add(juce::FlexItem(peak2).withFlex(1.0f));
     bandContainer2.performLayout(area.reduced(10));
     main.flexDirection = juce::FlexBox::Direction::column;
-    main.items.add(juce::FlexItem(spectrum).withFlex(3.0f));
-    main.items.add(juce::FlexItem(bandContainer1).withFlex(1.0f));
-    main.items.add(juce::FlexItem(bandContainer2).withFlex(1.5f));
+    main.items.add(juce::FlexItem(spectrum).withFlex(2.5f));
+    main.items.add(juce::FlexItem(bandContainer1).withFlex(1.5f));
+    main.items.add(juce::FlexItem(bandContainer2).withFlex(2.0f));
     main.performLayout(area.reduced(10));
     for (auto &subcomponent : subcomponents) {
         subcomponent->setBounds(subcomponent->getBounds().reduced(3));

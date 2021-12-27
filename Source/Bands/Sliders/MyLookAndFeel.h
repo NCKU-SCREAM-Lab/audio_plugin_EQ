@@ -16,9 +16,9 @@ class MyLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
     void drawRotarySlider(juce::Graphics &g, int x, int y, int width, int height, float sliderPos,
-                            const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider& slider) override
+                          const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider &slider) override
     {
-        auto bound = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
+        auto bound = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(0);
         auto radius = juce::jmin(bound.getWidth(), bound.getHeight()) / 2.0f;
         auto centreX = bound.getCentreX();
         auto centreY = bound.getCentreY();
