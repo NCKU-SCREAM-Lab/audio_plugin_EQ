@@ -1,8 +1,8 @@
 /*
   ==============================================================================
 
-    LowPassBand.h
-    Created: 27 Dec 2021 8:03:44am
+    BandWithoutGain.h
+    Created: 27 Dec 2021 8:49:49am
     Author:  robert0401, abao1005
 
   ==============================================================================
@@ -14,10 +14,10 @@
 #include "../PluginProcessor.h"
 #include "Sliders/SliderContainerWithoutGain.h"
 
-class LowPassBand : public juce::Component
+class BandWithoutGain : public juce::Component
 {
 public:
-    LowPassBand(EQAudioProcessor &p, juce::String filterName, int id)
+    BandWithoutGain(EQAudioProcessor &p, juce::String filterName, int id)
         : audioProcessor(p),
           slider(p, filterName.toLowerCase().replace(" ", "") + juce::String{id})
     {
@@ -27,7 +27,7 @@ public:
         addAndMakeVisible(label);
     }
 
-    ~LowPassBand() override
+    ~BandWithoutGain() override
     {
         
     }

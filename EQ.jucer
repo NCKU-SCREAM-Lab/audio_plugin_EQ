@@ -13,12 +13,9 @@
           <FILE id="a7mcSk" name="SliderContainerWithoutGain.h" compile="0" resource="0"
                 file="Source/Bands/Sliders/SliderContainerWithoutGain.h"/>
         </GROUP>
-        <FILE id="uL58ET" name="HighPassBand.h" compile="0" resource="0" file="Source/Bands/HighPassBand.h"/>
-        <FILE id="Y8lXyc" name="HighShelfBand.h" compile="0" resource="0" file="Source/Bands/HighShelfBand.h"/>
-        <FILE id="Fr95iy" name="LowPassBand.h" compile="0" resource="0" file="Source/Bands/LowPassBand.h"/>
-        <FILE id="Lz7Dzy" name="LowShelfBand.h" compile="0" resource="0" file="Source/Bands/LowShelfBand.h"/>
-        <FILE id="KIcOC0" name="NotchBand.h" compile="0" resource="0" file="Source/Bands/NotchBand.h"/>
-        <FILE id="vRvvfT" name="PeakBand.h" compile="0" resource="0" file="Source/Bands/PeakBand.h"/>
+        <FILE id="QvUMmb" name="BandWithoutGain.h" compile="0" resource="0"
+              file="Source/Bands/BandWithoutGain.h"/>
+        <FILE id="V8T0ci" name="BandWithGain.h" compile="0" resource="0" file="Source/Bands/BandWithGain.h"/>
       </GROUP>
       <FILE id="TRzHMX" name="FrequencySpectrum.cpp" compile="1" resource="0"
             file="Source/FrequencySpectrum.cpp"/>

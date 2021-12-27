@@ -1,8 +1,8 @@
 /*
   ==============================================================================
 
-    HighPassBand.h
-    Created: 27 Dec 2021 8:04:08am
+    BandWithGain.h
+    Created: 27 Dec 2021 8:49:28am
     Author:  robert0401, abao1005
 
   ==============================================================================
@@ -12,12 +12,12 @@
 
 #include <JuceHeader.h>
 #include "../PluginProcessor.h"
-#include "Sliders/SliderContainerWithoutGain.h"
+#include "Sliders/SliderContainerWithGain.h"
 
-class HighPassBand : public juce::Component
+class BandWithGain : public juce::Component
 {
 public:
-    HighPassBand(EQAudioProcessor &p, juce::String filterName, int id)
+    BandWithGain(EQAudioProcessor &p, juce::String filterName, int id)
         : audioProcessor(p),
           slider(p, filterName.toLowerCase().replace(" ", "") + juce::String{id})
     {
@@ -27,7 +27,7 @@ public:
         addAndMakeVisible(label);
     }
 
-    ~HighPassBand() override
+    ~BandWithGain() override
     {
         
     }
@@ -46,7 +46,7 @@ public:
 
 private:
     EQAudioProcessor &audioProcessor;
-    SliderContainerWithoutGain slider;
+    SliderContainerWithGain slider;
 
     juce::Label label;
 };
