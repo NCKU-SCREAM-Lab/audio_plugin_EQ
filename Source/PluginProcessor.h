@@ -68,7 +68,7 @@ private:
 	float* overlap;
 	juce::dsp::FFT forwardFFT;
 
-	//juce::Random random;
+	juce::Random random;
 
     void updateParameters();
     void genFilter();

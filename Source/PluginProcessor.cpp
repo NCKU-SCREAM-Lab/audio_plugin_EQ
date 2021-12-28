@@ -316,7 +316,52 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+	float value;
+	for (int i = 0; i < fftSize * 2; i++)
+	{
+		fftData[i] = 0.0;
+	}
+
+	for (int i = 0; i < buffer.getNumSamples(); i++) {
+		//value = outputBuffer.getSample(0, i);
+		value = random.nextFloat() * 0.25f - 0.125f;
+		value *= 10;
+
+		fftData[i] = value;
+		buffer.setSample(0, i, value);
+		buffer.setSample(1, i, value);
+	}
+
     updateParameters();
+
+	forwardFFT.performRealOnlyForwardTransform(&fftData.at(0));
+	/* Dot Product */
+	for (int i = 0; i < fftSize * 2; i += 2)
+	{
+		float sr = fftData[i];
+		float si = fftData[i + 1];
+		float fr = H_total[i];
+		float fi = H_total[i + 1];
+		fftData[i] = sr * fr - si * fi;
+		fftData[i + 1] = sr * fi + si * fr;
+	}
+	forwardFFT.performRealOnlyInverseTransform(&fftData.at(0));
+
+	/* Overlap-Add method */
+	int order = qToOrder(Q.at(0)) + qToOrder(Q.at(1));
+	for (int i = 0; i < order - 1; i++)
+	{
+		fftData[i] += overlap[i];
+	}
+	for (int i = 0; i<buffer.getNumSamples(); i++) {
+		buffer.setSample(0, i, fftData[i]);
+		buffer.setSample(1, i, fftData[i]);
+	}
+	for (int i = 0; i < order - 1; i++)
+	{
+		overlap[i] = fftData[buffer.getNumSamples() + i];
+	}
+
     singleChannelSampleFifo.update(buffer);
 }
 
@@ -439,6 +484,11 @@ void EQAudioProcessor::updateParameters()
 
 void EQAudioProcessor::genFilter()
 {
+	int order = qToOrder(Q.at(0)) + qToOrder(Q.at(1));
+	/* Reset overlap size */
+	delete[] overlap;
+	overlap = new float[order] { 0 };
+
 	genAllPass();
 	genLowPass();
 	genHighPass();
