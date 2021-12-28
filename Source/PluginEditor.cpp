@@ -19,6 +19,8 @@ EQAudioProcessorEditor::EQAudioProcessorEditor(EQAudioProcessor &p)
     for (auto &subcomponent : subcomponents) {
         addAndMakeVisible(subcomponent);
     }
+	AudioProcessorEditor::setResizable(true, true);
+	AudioProcessorEditor::setResizeLimits(600, 750, 1800, 2250);
 }
 
 EQAudioProcessorEditor::~EQAudioProcessorEditor()

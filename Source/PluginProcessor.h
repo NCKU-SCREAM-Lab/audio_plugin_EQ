@@ -44,6 +44,11 @@ public:
 
     juce::AudioProcessorValueTreeState tree;
 
+	static constexpr auto fftOrder = 10;
+	static constexpr auto fftSize = 1 << fftOrder;
+
+	std::vector<float> getFilterResponse() { return H_freq_total; }
+
 private:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
 
@@ -52,8 +57,28 @@ private:
     std::vector<float> Q { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     std::vector<float> gain { 0.0f, 0.0f, 0.0f, 0.0f };
 
+	std::array <float, 560> h = { 0.0 };
+	std::vector<float> w;  // window function
+	std::vector<float> fftData;
+	std::vector<float> H;
+	std::vector<float> H_freq;
+	std::vector<float> H_total;
+	std::vector<float> H_freq_total;
+
+	float* overlap;
+	juce::dsp::FFT forwardFFT;
+
+	//juce::Random random;
+
     void updateParameters();
     void genFilter();
+	void genAllPass();
+	void genLowPass();
+	void genHighPass();
+
+	int qToOrder(float q);
+
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor);
 };

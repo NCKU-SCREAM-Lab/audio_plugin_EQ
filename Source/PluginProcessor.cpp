@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#define MY_PI 3.14159265358979323846
 
 EQAudioProcessor::EQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -14,7 +15,7 @@ EQAudioProcessor::EQAudioProcessor()
     ), tree(*this, nullptr, "PARAM", {
         std::make_unique<juce::AudioParameterFloat>(
             "lowpass1_f", "lowpass1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(0.0f, 20000.0f, 10.0f), 15000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -22,7 +23,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "lowpass1_q", "lowpass1_Q",
-            juce::NormalisableRange<float>(0.1f, 2.0f, 0.1f), 1.0f,
+            juce::NormalisableRange<float>(0.1f, 2.0f, 0.01f), 1.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -30,7 +31,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "highpass1_f", "highpass1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(0.0f, 20000.0f, 10.0f), 200.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -38,7 +39,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "highpass1_q", "highpass1_Q",
-            juce::NormalisableRange<float>(0.1f, 2.0f, 0.1f), 1.0f,
+            juce::NormalisableRange<float>(0.1f, 2.0f, 0.01f), 1.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -172,10 +173,18 @@ EQAudioProcessor::EQAudioProcessor()
             [](float value, int){ return juce::String(value); },
             [](juce::String text){ return text.getFloatValue(); }
         )
-    })
+    }), forwardFFT(fftOrder)
 #endif
 {
-
+	overlap = new float[15]{ 0 };
+	for (int i = 0; i < fftSize*2; ++i)
+	{
+		H.push_back(0.0f);
+		H_freq.push_back(0.0f);
+		H_total.push_back(0.0f);
+		H_freq_total.push_back(0.0f);
+		fftData.push_back(0.0f);
+	}
 }
 
 EQAudioProcessor::~EQAudioProcessor()
@@ -297,8 +306,9 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear(i, 0, buffer.getNumSamples());
+	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
+		buffer.clear(i, 0, buffer.getNumSamples());
+	}
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -429,5 +439,147 @@ void EQAudioProcessor::updateParameters()
 
 void EQAudioProcessor::genFilter()
 {
+	genAllPass();
+	genLowPass();
+	genHighPass();
+}
 
+void EQAudioProcessor::genAllPass()
+{
+	int order = qToOrder(2.0f);
+	/* Construct impulse response of All Pass Filter (FIR) */
+	h[0] = 1.0f;
+	for (int i = 1; i < order; i++)
+		h[i] = 0.0f;
+
+	/* FFT */
+	for (int i = 0; i < fftSize * 2; i++)
+	{
+		H_total[i] = (i < order) ? h[i] : 0;
+		H_freq_total[i] = (i < order) ? h[i] : 0;
+	}
+
+	forwardFFT.performRealOnlyForwardTransform(&H_total.at(0));
+	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq_total.at(0));
+
+}
+void EQAudioProcessor::genLowPass()
+{
+	int order = qToOrder(Q.at(0));
+	/* Construct impulse response of Low Pass Filter (FIR) */
+	auto fc = f.at(0) / getSampleRate();
+	float impulse_response_sum = 0.0f;
+
+	for (int i = -(order - 1) / 2, j = 0; i <= order / 2; i++, j++) {
+		if (i != 0)
+			h[j] = (sin(2 * fc * i * MY_PI) / (2 * fc * i * MY_PI));
+		else
+			h[j] = (1.0);
+	}
+
+	/* Set blackman window */
+	w.clear();
+	for (int i = 0; i < order; i++)
+		w.push_back(0.42 - 0.5 * cos(2 * MY_PI * i / (order - 1)) + 0.08 * cos(4 * MY_PI * i / (order - 1)));
+
+	/* Windowed-Sinc Filter */
+	for (int i = 0; i < order; i++) {
+		h[i] = h[i] * w.at(i);
+		impulse_response_sum += h[i];
+	}
+
+	/* Normalized windowed-sinc filter */
+	for (int i = 0; i < order; i++)
+		h[i] /= impulse_response_sum;
+
+	/* FFT */
+	for (int i = 0; i < fftSize * 2; i++)
+	{
+		H[i] = (i < order) ? h[i] : 0;
+		H_freq[i] = (i < order) ? h[i] : 0;
+	}
+	forwardFFT.performRealOnlyForwardTransform(&H.at(0));
+	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq.at(0));
+
+	for (int i = 0; i < fftSize * 2; i += 2)
+	{
+		float r1 = H[i];
+		float i1 = H[i + 1];
+		float r2 = H_total[i];
+		float i2 = H_total[i + 1];
+		H_total[i] = r1 * r2 - i1 * i2;
+		H_total[i + 1] = r1 * i2 + i1 * r2;
+	}
+	juce::FloatVectorOperations::multiply(&H_freq_total.at(0), &H_freq_total.at(0), &H_freq.at(0), fftSize * 2);
+}
+void EQAudioProcessor::genHighPass()
+{
+	for (int i = 0; i < 560; i++)
+	{
+		h[i] = 0;
+	}
+	int order = qToOrder(Q.at(1));
+	/* Construct impulse response of Low Pass Filter (FIR) first */
+	auto fc = f.at(1) / getSampleRate();
+	float impulse_response_sum = 0.0f;
+
+	for (int i = -(order - 1) / 2, j = 0; i <= order / 2; i++, j++) {
+		if (i != 0)
+			h.at(j) = (sin(2 * fc * i * MY_PI) / (2 * fc * i * MY_PI));
+		else
+			h.at(j) = (1.0);
+	}
+
+	/* Set blackman window */
+	w.clear();
+	for (int i = 0; i < order; i++)
+		w.push_back(0.42 - 0.5 * cos(2 * MY_PI * i / (order - 1)) + 0.08 * cos(4 * MY_PI * i / (order - 1)));
+
+	/* Windowed-Sinc Filter */
+	for (int i = 0; i < order; i++) {
+		h.at(i) = h.at(i) * w.at(i);
+		impulse_response_sum += h.at(i);
+	}
+
+	/* Normalized windowed-sinc filter */
+	for (int i = 0; i < order; i++)
+		h.at(i) /= impulse_response_sum;
+
+	/* Then using spectral inversion to convert it into a high-pass one. */
+	for (int i = 0; i < order; i++)
+		h.at(i) *= -1;
+	h.at(order / 2) += 1;
+
+	/* FFT */
+	for (int i = 0; i < fftSize * 2; i++)
+	{
+		H[i] = (i < order) ? h[i] : 0;
+		H_freq[i] = (i < order) ? h[i] : 0;
+	}
+	forwardFFT.performRealOnlyForwardTransform(&H.at(0));
+	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq.at(0));
+
+	for (int i = 0; i < fftSize * 2; i += 2)
+	{
+		float r1 = H[i];
+		float i1 = H[i + 1];
+		float r2 = H_total[i];
+		float i2 = H_total[i + 1];
+		H_total[i] = r1 * r2 - i1 * i2;
+		H_total[i + 1] = r1 * i2 + i1 * r2;
+	}
+	juce::FloatVectorOperations::multiply(&H_freq_total.at(0), &H_freq_total.at(0), &H_freq.at(0), fftSize * 2);
+
+}
+
+int EQAudioProcessor::qToOrder(float q)
+{
+	auto map = [](float q)
+	{
+		return juce::jmap(q,
+			0.1f, 2.0f,
+			15.f, 255.f);
+	};
+
+	return ((int)map(q)%2==1) ? (int)map(q) : (int)map(q)-1;
 }
