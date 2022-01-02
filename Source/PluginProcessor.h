@@ -80,7 +80,9 @@ private:
 	int qToOrder(float q);
 
     void applyFIRFilter(juce::AudioBuffer<float> &);
-    void applyIIRFilter();
+    void applyIIRFilter(juce::AudioBuffer<float> &);
+
+    std::array<float, 6> genIIRFilter(int);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor);
 };

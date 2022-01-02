@@ -327,9 +327,10 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
 	}
 
     updateParameters();
-    if (buffer.getSample(0, 0) && buffer.getSample(1, 0))
+    if (buffer.getSample(0, 0) && buffer.getSample(1, 0)) {
         applyFIRFilter(buffer);
-    applyIIRFilter();
+        applyIIRFilter(buffer);
+    }
     singleChannelSampleFifo.update(buffer);
 }
 
@@ -625,7 +626,66 @@ void EQAudioProcessor::applyFIRFilter(juce::AudioBuffer<float> &buffer)
 	}
 }
 
-void EQAudioProcessor::applyIIRFilter()
+void EQAudioProcessor::applyIIRFilter(juce::AudioBuffer<float> &buffer)
 {
-    
+    float value;
+    std::vector <float> x;  // input signal
+	std::vector <float> y;  // output signal
+    std::vector <float> h1; // impulse response for input
+    std::vector <float> h2; // impulse response for output
+
+    /* Call JUCE API to get coefficients of the corresponding filter */
+    auto coef = std::array<float, 6> {0};
+    for (int id = 2; id < 8; ++id) {
+        /* initialize the first few input and output signal to 0 */
+        x = {0, 0, 0};
+        y = {0, 0};
+
+        /* construct impulse response */
+        coef = genIIRFilter(id);
+        h1 = { coef[2] / coef[3], coef[1] / coef[3], coef[0] / coef[3] };
+        h2 = { coef[5] / coef[3], coef[4] / coef[3] };
+
+        /* apply IIR filter */
+        for (int i = 0; i < buffer.getNumSamples(); ++i) {
+            x.erase(x.begin());
+            x.push_back(buffer.getSample(0, i));
+
+            value = 0.0;
+            for (int j = 0; j < 3; j++)
+                value += x.at(j) * h1.at(j);
+            for (int j = 0; j < 2; j++)
+                value -= y.at(j) * h2.at(j);
+
+            y.erase(y.begin());
+            y.push_back(value);
+
+            buffer.setSample(0, i, value);
+            buffer.setSample(1, i, value);
+        }
+    }
+}
+
+std::array<float, 6> EQAudioProcessor::genIIRFilter(int id)
+{   
+    auto coef = std::array<float, 6> {0};
+    switch (id) {
+        case 2: case 3:
+            coef = juce::dsp::IIR::ArrayCoefficients<float>::makeNotch(getSampleRate(), f[id], Q[id]);
+            break;
+        case 4:
+            coef = juce::dsp::IIR::ArrayCoefficients<float>::makeLowShelf(getSampleRate(), f[id], Q[id], gain[id-4]);
+            break;
+        case 5:
+            coef = juce::dsp::IIR::ArrayCoefficients<float>::makeHighShelf(getSampleRate(), f[id], Q[id], gain[id-4]);
+            break;
+        case 6: case 7:
+            coef = juce::dsp::IIR::ArrayCoefficients<float>::makePeakFilter(getSampleRate(), f[id], Q[id], gain[id-4]);
+            break;
+    }
+
+    /* generate frequency response */
+    // start from here
+
+    return coef;
 }
