@@ -71,14 +71,16 @@ private:
 	juce::Random random;
 
     void updateParameters();
-    void genFilter();
+    
+    void genFIRFilter();
 	void genAllPass();
 	void genLowPass();
 	void genHighPass();
-
+    
 	int qToOrder(float q);
 
-
+    void applyFIRFilter(juce::AudioBuffer<float> &);
+    void applyIIRFilter();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor);
 };

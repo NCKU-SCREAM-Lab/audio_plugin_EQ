@@ -317,51 +317,19 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
 	float value;
-	for (int i = 0; i < fftSize * 2; i++)
-	{
-		fftData[i] = 0.0;
-	}
-
 	for (int i = 0; i < buffer.getNumSamples(); i++) {
 		//value = outputBuffer.getSample(0, i);
 		value = random.nextFloat() * 0.25f - 0.125f;
 		value *= 10;
 
-		fftData[i] = value;
 		buffer.setSample(0, i, value);
 		buffer.setSample(1, i, value);
 	}
 
     updateParameters();
-
-	forwardFFT.performRealOnlyForwardTransform(&fftData.at(0));
-	/* Dot Product */
-	for (int i = 0; i < fftSize * 2; i += 2)
-	{
-		float sr = fftData[i];
-		float si = fftData[i + 1];
-		float fr = H_total[i];
-		float fi = H_total[i + 1];
-		fftData[i] = sr * fr - si * fi;
-		fftData[i + 1] = sr * fi + si * fr;
-	}
-	forwardFFT.performRealOnlyInverseTransform(&fftData.at(0));
-
-	/* Overlap-Add method */
-	int order = qToOrder(Q.at(0)) + qToOrder(Q.at(1));
-	for (int i = 0; i < order - 1; i++)
-	{
-		fftData[i] += overlap[i];
-	}
-	for (int i = 0; i<buffer.getNumSamples(); i++) {
-		buffer.setSample(0, i, fftData[i]);
-		buffer.setSample(1, i, fftData[i]);
-	}
-	for (int i = 0; i < order - 1; i++)
-	{
-		overlap[i] = fftData[buffer.getNumSamples() + i];
-	}
-
+    if (buffer.getSample(0, 0) && buffer.getSample(1, 0))
+        applyFIRFilter(buffer);
+    applyIIRFilter();
     singleChannelSampleFifo.update(buffer);
 }
 
@@ -396,93 +364,77 @@ juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
 
 void EQAudioProcessor::updateParameters()
 {
-    bool isUpdated = false;
+    bool isFIRUpdated = false;
     if (f[0] != tree.getRawParameterValue("lowpass1_f")->load()) {
         f[0] = tree.getRawParameterValue("lowpass1_f")->load();
-        isUpdated = true;
+        isFIRUpdated = true;
     }
     if (Q[0] != tree.getRawParameterValue("lowpass1_q")->load()) {
         Q[0] = tree.getRawParameterValue("lowpass1_q")->load();
-        isUpdated = true;
+        isFIRUpdated = true;
     }
     if (f[1] != tree.getRawParameterValue("highpass1_f")->load()) {
         f[1] = tree.getRawParameterValue("highpass1_f")->load();
-        isUpdated = true;
+        isFIRUpdated = true;
     }
     if (Q[1] != tree.getRawParameterValue("highpass1_q")->load()) {
         Q[1] = tree.getRawParameterValue("highpass1_q")->load();
-        isUpdated = true;
+        isFIRUpdated = true;
     }
     if (f[2] != tree.getRawParameterValue("notch1_f")->load()) {
         f[2] = tree.getRawParameterValue("notch1_f")->load();
-        isUpdated = true;
     }
     if (Q[2] != tree.getRawParameterValue("notch1_q")->load()) {
         Q[2] = tree.getRawParameterValue("notch1_q")->load();
-        isUpdated = true;
     }
     if (f[3] != tree.getRawParameterValue("notch2_f")->load()) {
         f[3] = tree.getRawParameterValue("notch2_f")->load();
-        isUpdated = true;
     }
     if (Q[3] != tree.getRawParameterValue("notch2_q")->load()) {
         Q[3] = tree.getRawParameterValue("notch2_q")->load();
-        isUpdated = true;
     }
     if (f[4] != tree.getRawParameterValue("lowshelf1_f")->load()) {
         f[4] = tree.getRawParameterValue("lowshelf1_f")->load();
-        isUpdated = true;
     }
     if (Q[4] != tree.getRawParameterValue("lowshelf1_q")->load()) {
         Q[4] = tree.getRawParameterValue("lowshelf1_q")->load();
-        isUpdated = true;
     }
     if (gain[0] != tree.getRawParameterValue("lowshelf1_gain")->load()) {
         gain[0] = tree.getRawParameterValue("lowshelf1_gain")->load();
-        isUpdated = true;
     }
     if (f[5] != tree.getRawParameterValue("highshelf1_f")->load()) {
         f[5] = tree.getRawParameterValue("highshelf1_f")->load();
-        isUpdated = true;
     }
     if (Q[5] != tree.getRawParameterValue("highshelf1_q")->load()) {
         Q[5] = tree.getRawParameterValue("highshelf1_q")->load();
-        isUpdated = true;
     }
     if (gain[1] != tree.getRawParameterValue("highshelf1_gain")->load()) {
         gain[1] = tree.getRawParameterValue("highshelf1_gain")->load();
-        isUpdated = true;
     }
     if (f[6] != tree.getRawParameterValue("peak1_f")->load()) {
         f[6] = tree.getRawParameterValue("peak1_f")->load();
-        isUpdated = true;
     }
     if (Q[6] != tree.getRawParameterValue("peak1_q")->load()) {
         Q[6] = tree.getRawParameterValue("peak1_q")->load();
-        isUpdated = true;
     }
     if (gain[2] != tree.getRawParameterValue("peak1_gain")->load()) {
         gain[2] = tree.getRawParameterValue("peak1_gain")->load();
-        isUpdated = true;
     }
     if (f[7] != tree.getRawParameterValue("peak2_f")->load()) {
         f[7] = tree.getRawParameterValue("peak2_f")->load();
-        isUpdated = true;
     }
     if (Q[7] != tree.getRawParameterValue("peak2_q")->load()) {
         Q[7] = tree.getRawParameterValue("peak2_q")->load();
-        isUpdated = true;
     }
     if (gain[3] != tree.getRawParameterValue("peak2_gain")->load()) {
         gain[3] = tree.getRawParameterValue("peak2_gain")->load();
-        isUpdated = true;
     }
 
-    if (isUpdated)
-        genFilter();
+    if (isFIRUpdated)
+        genFIRFilter();
 }
 
-void EQAudioProcessor::genFilter()
+void EQAudioProcessor::genFIRFilter()
 {
 	int order = qToOrder(Q.at(0)) + qToOrder(Q.at(1));
 	/* Reset overlap size */
@@ -513,6 +465,7 @@ void EQAudioProcessor::genAllPass()
 	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq_total.at(0));
 
 }
+
 void EQAudioProcessor::genLowPass()
 {
 	int order = qToOrder(Q.at(0));
@@ -562,6 +515,7 @@ void EQAudioProcessor::genLowPass()
 	}
 	juce::FloatVectorOperations::multiply(&H_freq_total.at(0), &H_freq_total.at(0), &H_freq.at(0), fftSize * 2);
 }
+
 void EQAudioProcessor::genHighPass()
 {
 	for (int i = 0; i < 560; i++)
@@ -632,4 +586,46 @@ int EQAudioProcessor::qToOrder(float q)
 	};
 
 	return ((int)map(q)%2==1) ? (int)map(q) : (int)map(q)-1;
+}
+
+void EQAudioProcessor::applyFIRFilter(juce::AudioBuffer<float> &buffer)
+{
+	for (int i = 0; i < fftSize * 2; i++)
+		fftData[i] = 0.0;
+
+    auto *readIndex = buffer.getReadPointer(0);
+    std::copy(readIndex, readIndex + buffer.getNumSamples(), fftData.begin());
+
+    forwardFFT.performRealOnlyForwardTransform(&fftData.at(0));
+	/* Dot Product */
+	for (int i = 0; i < fftSize * 2; i += 2)
+	{
+		float sr = fftData[i];
+		float si = fftData[i + 1];
+		float fr = H_total[i];
+		float fi = H_total[i + 1];
+		fftData[i] = sr * fr - si * fi;
+		fftData[i + 1] = sr * fi + si * fr;
+	}
+	forwardFFT.performRealOnlyInverseTransform(&fftData.at(0));
+
+	/* Overlap-Add method */
+	int order = qToOrder(Q.at(0)) + qToOrder(Q.at(1));
+	for (int i = 0; i < order - 1; i++)
+	{
+		fftData[i] += overlap[i];
+	}
+	for (int i = 0; i<buffer.getNumSamples(); i++) {
+		buffer.setSample(0, i, fftData[i]);
+		buffer.setSample(1, i, fftData[i]);
+	}
+	for (int i = 0; i < order - 1; i++)
+	{
+		overlap[i] = fftData[buffer.getNumSamples() + i];
+	}
+}
+
+void EQAudioProcessor::applyIIRFilter()
+{
+    
 }
