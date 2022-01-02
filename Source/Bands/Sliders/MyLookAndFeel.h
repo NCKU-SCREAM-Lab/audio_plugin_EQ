@@ -18,7 +18,7 @@ public:
     void drawRotarySlider(juce::Graphics &g, int x, int y, int width, int height, float sliderPos,
                           const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider &slider) override
     {
-        auto bound = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(0);
+        auto bound = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(4);
         auto radius = juce::jmin(bound.getWidth(), bound.getHeight()) / 2.0f;
         auto centreX = bound.getCentreX();
         auto centreY = bound.getCentreY();

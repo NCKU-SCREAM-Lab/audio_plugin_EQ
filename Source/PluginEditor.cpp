@@ -14,13 +14,13 @@ EQAudioProcessorEditor::EQAudioProcessorEditor(EQAudioProcessor &p)
       peak1(p, "Peak", 1),
       peak2(p, "Peak", 2)
 {
-    setSize(600, 750);
+    setSize(700, 750);
 
     for (auto &subcomponent : subcomponents) {
         addAndMakeVisible(subcomponent);
     }
 	AudioProcessorEditor::setResizable(true, true);
-	AudioProcessorEditor::setResizeLimits(600, 750, 1800, 2250);
+	AudioProcessorEditor::setResizeLimits(1000, 750, 1800, 2250);
 }
 
 EQAudioProcessorEditor::~EQAudioProcessorEditor()
