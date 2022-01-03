@@ -15,7 +15,7 @@ EQAudioProcessor::EQAudioProcessor()
     ), tree(*this, nullptr, "PARAM", {
         std::make_unique<juce::AudioParameterFloat>(
             "lowpass1_f", "lowpass1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 10.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 16000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -31,7 +31,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "highpass1_f", "highpass1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 10.0f), 200.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 200.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -47,7 +47,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "notch1_f", "notch1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 5000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -63,7 +63,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "notch2_f", "notch2_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 1000.0f), 10000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -79,7 +79,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "lowshelf1_f", "lowshelf1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 15000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -103,7 +103,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "highshelf1_f", "highshelf1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 15000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -127,7 +127,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "peak1_f", "peak1_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 15000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -151,7 +151,7 @@ EQAudioProcessor::EQAudioProcessor()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "peak2_f", "peak2_F",
-            juce::NormalisableRange<float>(0.0f, 20000.0f, 1000.0f), 15000.0f,
+            juce::NormalisableRange<float>(20.0f, 20000.0f, 10.0f), 15000.0f,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int){ return juce::String(value); },
@@ -176,15 +176,6 @@ EQAudioProcessor::EQAudioProcessor()
     }), forwardFFT(fftOrder)
 #endif
 {
-	overlap = new float[15]{ 0 };
-	for (int i = 0; i < fftSize*2; ++i)
-	{
-		H.push_back(0.0f);
-		H_freq.push_back(0.0f);
-		H_total.push_back(0.0f);
-		H_freq_total.push_back(0.0f);
-		fftData.push_back(0.0f);
-	}
 }
 
 EQAudioProcessor::~EQAudioProcessor()
@@ -259,6 +250,29 @@ void EQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+	overlap = new float[15]{ 0 };
+	for (int i = 0; i < fftSize * 2; ++i)
+	{
+		FIR_freq_response_c.push_back(0.0f);
+		FIR_freq_response.push_back(0.0f);
+		fftData.push_back(0.0f);
+	}
+
+	for (int i = 0; i < fftSize/2; ++i)
+	{
+		frequencies.push_back(binToFreq(i,sampleRate));
+		IIR_Response.push_back(0.5);
+		freqResponse.push_back(0.5);
+	}
+	for (int i = 0; i < 6; i++)
+	{
+		std::vector<double> newVec;
+		IIR_Responses.push_back(newVec);
+		for (int j = 0; j < fftSize/2; j++)
+		{
+			IIR_Responses.at(i).push_back(0.5f);
+		}
+	}
     singleChannelSampleFifo.prepare(samplesPerBlock);
 }
 
@@ -316,16 +330,17 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-	float value;
+	
+	/* White noise for testing */
+	/*float value;
 	for (int i = 0; i < buffer.getNumSamples(); i++) {
-		//value = outputBuffer.getSample(0, i);
 		value = random.nextFloat() * 0.25f - 0.125f;
 		value *= 10;
 
 		buffer.setSample(0, i, value);
 		buffer.setSample(1, i, value);
-	}
-
+	}*/
+	
     updateParameters();
     if (buffer.getSample(0, 0) && buffer.getSample(1, 0)) {
         applyFIRFilter(buffer);
@@ -365,7 +380,9 @@ juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
 
 void EQAudioProcessor::updateParameters()
 {
-    bool isFIRUpdated = false;
+	bool isFIRUpdated = false;
+	bool isIIRUpdated = false;
+
     if (f[0] != tree.getRawParameterValue("lowpass1_f")->load()) {
         f[0] = tree.getRawParameterValue("lowpass1_f")->load();
         isFIRUpdated = true;
@@ -384,55 +401,75 @@ void EQAudioProcessor::updateParameters()
     }
     if (f[2] != tree.getRawParameterValue("notch1_f")->load()) {
         f[2] = tree.getRawParameterValue("notch1_f")->load();
+		isIIRUpdated = true;
     }
     if (Q[2] != tree.getRawParameterValue("notch1_q")->load()) {
         Q[2] = tree.getRawParameterValue("notch1_q")->load();
+		isIIRUpdated = true;
     }
     if (f[3] != tree.getRawParameterValue("notch2_f")->load()) {
         f[3] = tree.getRawParameterValue("notch2_f")->load();
+		isIIRUpdated = true;
     }
     if (Q[3] != tree.getRawParameterValue("notch2_q")->load()) {
         Q[3] = tree.getRawParameterValue("notch2_q")->load();
+		isIIRUpdated = true;
     }
     if (f[4] != tree.getRawParameterValue("lowshelf1_f")->load()) {
         f[4] = tree.getRawParameterValue("lowshelf1_f")->load();
+		isIIRUpdated = true;
     }
     if (Q[4] != tree.getRawParameterValue("lowshelf1_q")->load()) {
         Q[4] = tree.getRawParameterValue("lowshelf1_q")->load();
+		isIIRUpdated = true;
     }
     if (gain[0] != tree.getRawParameterValue("lowshelf1_gain")->load()) {
         gain[0] = tree.getRawParameterValue("lowshelf1_gain")->load();
+		isIIRUpdated = true;
     }
     if (f[5] != tree.getRawParameterValue("highshelf1_f")->load()) {
         f[5] = tree.getRawParameterValue("highshelf1_f")->load();
+		isIIRUpdated = true;
     }
     if (Q[5] != tree.getRawParameterValue("highshelf1_q")->load()) {
         Q[5] = tree.getRawParameterValue("highshelf1_q")->load();
+		isIIRUpdated = true;
     }
     if (gain[1] != tree.getRawParameterValue("highshelf1_gain")->load()) {
         gain[1] = tree.getRawParameterValue("highshelf1_gain")->load();
+		isIIRUpdated = true;
     }
     if (f[6] != tree.getRawParameterValue("peak1_f")->load()) {
         f[6] = tree.getRawParameterValue("peak1_f")->load();
+		isIIRUpdated = true;
     }
     if (Q[6] != tree.getRawParameterValue("peak1_q")->load()) {
         Q[6] = tree.getRawParameterValue("peak1_q")->load();
+		isIIRUpdated = true;
     }
     if (gain[2] != tree.getRawParameterValue("peak1_gain")->load()) {
         gain[2] = tree.getRawParameterValue("peak1_gain")->load();
+		isIIRUpdated = true;
     }
     if (f[7] != tree.getRawParameterValue("peak2_f")->load()) {
         f[7] = tree.getRawParameterValue("peak2_f")->load();
+		isIIRUpdated = true;
     }
     if (Q[7] != tree.getRawParameterValue("peak2_q")->load()) {
         Q[7] = tree.getRawParameterValue("peak2_q")->load();
+		isIIRUpdated = true;
     }
     if (gain[3] != tree.getRawParameterValue("peak2_gain")->load()) {
         gain[3] = tree.getRawParameterValue("peak2_gain")->load();
+		isIIRUpdated = true;
     }
 
-    if (isFIRUpdated)
-        genFIRFilter();
+	if (isFIRUpdated) {
+		updateFilterAndFrequencyResponse(true);
+	}
+	if (isIIRUpdated) {
+		updateFilterAndFrequencyResponse(false);
+	}
 }
 
 void EQAudioProcessor::genFIRFilter()
@@ -449,31 +486,37 @@ void EQAudioProcessor::genFIRFilter()
 
 void EQAudioProcessor::genAllPass()
 {
+	/* Initialize impulse response of All Pass Filter (FIR) */
 	int order = qToOrder(2.0f);
-	/* Construct impulse response of All Pass Filter (FIR) */
+	std::array <float, 560> h = { 0.0 };
 	h[0] = 1.0f;
-	for (int i = 1; i < order; i++)
-		h[i] = 0.0f;
+	juce::FloatVectorOperations::fill(&h[1], 0.0f, order - 1);
 
 	/* FFT */
 	for (int i = 0; i < fftSize * 2; i++)
 	{
-		H_total[i] = (i < order) ? h[i] : 0;
-		H_freq_total[i] = (i < order) ? h[i] : 0;
+		FIR_freq_response_c[i] = (i < order) ? h[i] : 0;
+		FIR_freq_response[i] = (i < order) ? h[i] : 0;
 	}
 
-	forwardFFT.performRealOnlyForwardTransform(&H_total.at(0));
-	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq_total.at(0));
+	/* Create initial all pass filter */
+	forwardFFT.performRealOnlyForwardTransform(&FIR_freq_response_c.at(0));
+	forwardFFT.performFrequencyOnlyForwardTransform(&FIR_freq_response.at(0));
 
 }
 
 void EQAudioProcessor::genLowPass()
 {
 	int order = qToOrder(Q.at(0));
-	/* Construct impulse response of Low Pass Filter (FIR) */
+	std::vector<float> H, H_freq;
+	H.resize(fftSize * 2);
+	H_freq.resize(fftSize * 2);
 	auto fc = f.at(0) / getSampleRate();
 	float impulse_response_sum = 0.0f;
 
+	/* Construct impulse response of Low Pass Filter (FIR) */
+
+	std::array <float, 560> h = { 0.0 };
 	for (int i = -(order - 1) / 2, j = 0; i <= order / 2; i++, j++) {
 		if (i != 0)
 			h[j] = (sin(2 * fc * i * MY_PI) / (2 * fc * i * MY_PI));
@@ -505,29 +548,30 @@ void EQAudioProcessor::genLowPass()
 	forwardFFT.performRealOnlyForwardTransform(&H.at(0));
 	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq.at(0));
 
+	/* Add new filter into existing one */
 	for (int i = 0; i < fftSize * 2; i += 2)
 	{
 		float r1 = H[i];
 		float i1 = H[i + 1];
-		float r2 = H_total[i];
-		float i2 = H_total[i + 1];
-		H_total[i] = r1 * r2 - i1 * i2;
-		H_total[i + 1] = r1 * i2 + i1 * r2;
+		float r2 = FIR_freq_response_c[i];
+		float i2 = FIR_freq_response_c[i + 1];
+		FIR_freq_response_c[i] = r1 * r2 - i1 * i2;
+		FIR_freq_response_c[i + 1] = r1 * i2 + i1 * r2;
 	}
-	juce::FloatVectorOperations::multiply(&H_freq_total.at(0), &H_freq_total.at(0), &H_freq.at(0), fftSize * 2);
+	juce::FloatVectorOperations::multiply(&FIR_freq_response.at(0), &FIR_freq_response.at(0), &H_freq.at(0), fftSize * 2);
 }
 
 void EQAudioProcessor::genHighPass()
 {
-	for (int i = 0; i < 560; i++)
-	{
-		h[i] = 0;
-	}
 	int order = qToOrder(Q.at(1));
-	/* Construct impulse response of Low Pass Filter (FIR) first */
+	std::vector<float> H, H_freq;
+	H.resize(fftSize * 2);
+	H_freq.resize(fftSize * 2);
 	auto fc = f.at(1) / getSampleRate();
 	float impulse_response_sum = 0.0f;
 
+	/* Construct impulse response of Low Pass Filter (FIR) first */
+	std::array <float, 560> h = { 0.0 };
 	for (int i = -(order - 1) / 2, j = 0; i <= order / 2; i++, j++) {
 		if (i != 0)
 			h.at(j) = (sin(2 * fc * i * MY_PI) / (2 * fc * i * MY_PI));
@@ -564,50 +608,70 @@ void EQAudioProcessor::genHighPass()
 	forwardFFT.performRealOnlyForwardTransform(&H.at(0));
 	forwardFFT.performFrequencyOnlyForwardTransform(&H_freq.at(0));
 
+	/* Add new filter into existing one */
 	for (int i = 0; i < fftSize * 2; i += 2)
 	{
 		float r1 = H[i];
 		float i1 = H[i + 1];
-		float r2 = H_total[i];
-		float i2 = H_total[i + 1];
-		H_total[i] = r1 * r2 - i1 * i2;
-		H_total[i + 1] = r1 * i2 + i1 * r2;
+		float r2 = FIR_freq_response_c[i];
+		float i2 = FIR_freq_response_c[i + 1];
+		FIR_freq_response_c[i] = r1 * r2 - i1 * i2;
+		FIR_freq_response_c[i + 1] = r1 * i2 + i1 * r2;
 	}
-	juce::FloatVectorOperations::multiply(&H_freq_total.at(0), &H_freq_total.at(0), &H_freq.at(0), fftSize * 2);
+	juce::FloatVectorOperations::multiply(&FIR_freq_response.at(0), &FIR_freq_response.at(0), &H_freq.at(0), fftSize * 2);
 
 }
 
-int EQAudioProcessor::qToOrder(float q)
+std::array<float, 6> EQAudioProcessor::genIIRFilter(int id)
 {
-	auto map = [](float q)
-	{
-		return juce::jmap(q,
-			0.1f, 2.0f,
-			15.f, 255.f);
-	};
+	auto coef = std::array<float, 6> {0};
+	switch (id) {
+	case 2: case 3:
+		coef = juce::dsp::IIR::ArrayCoefficients<float>::makeNotch(getSampleRate(), f[id], Q[id]);
+		break;
+	case 4:
+		coef = juce::dsp::IIR::ArrayCoefficients<float>::makeLowShelf(getSampleRate(), f[id], Q[id], gain[id - 4]);
+		break;
+	case 5:
+		coef = juce::dsp::IIR::ArrayCoefficients<float>::makeHighShelf(getSampleRate(), f[id], Q[id], gain[id - 4]);
+		break;
+	case 6: case 7:
+		coef = juce::dsp::IIR::ArrayCoefficients<float>::makePeakFilter(getSampleRate(), f[id], Q[id], gain[id - 4]);
+		break;
+	}
 
-	return ((int)map(q)%2==1) ? (int)map(q) : (int)map(q)-1;
+	/* generate frequency response of IIR filter */
+	std::vector<double> response;
+	response.resize(fftSize/2);
+	juce::FloatVectorOperations::fill(&response[0], 0, fftSize/2);
+
+	juce::dsp::IIR::Coefficients<float> IIR_filter(coef[0], coef[1], coef[2], coef[3], coef[4], coef[5]);
+	IIR_filter.getMagnitudeForFrequencyArray(&frequencies[0], &response[0], fftSize/2, getSampleRate());
+	juce::FloatVectorOperations::copy(&IIR_Responses[id - 2][0], &response[0], fftSize/2);
+
+	return coef;
 }
 
 void EQAudioProcessor::applyFIRFilter(juce::AudioBuffer<float> &buffer)
 {
-	for (int i = 0; i < fftSize * 2; i++)
-		fftData[i] = 0.0;
+	juce::FloatVectorOperations::fill(&fftData[0], 0.0f, fftSize * 2);
 
     auto *readIndex = buffer.getReadPointer(0);
-    std::copy(readIndex, readIndex + buffer.getNumSamples(), fftData.begin());
+	juce::FloatVectorOperations::copy(&fftData[0], readIndex, buffer.getNumSamples());
 
+	/* signal FFT */
     forwardFFT.performRealOnlyForwardTransform(&fftData.at(0));
-	/* Dot Product */
+	/* Dot product with the frequency response of the filter */
 	for (int i = 0; i < fftSize * 2; i += 2)
 	{
 		float sr = fftData[i];
 		float si = fftData[i + 1];
-		float fr = H_total[i];
-		float fi = H_total[i + 1];
+		float fr = FIR_freq_response_c[i];
+		float fi = FIR_freq_response_c[i + 1];
 		fftData[i] = sr * fr - si * fi;
 		fftData[i + 1] = sr * fi + si * fr;
 	}
+	/* signal iFFT */
 	forwardFFT.performRealOnlyInverseTransform(&fftData.at(0));
 
 	/* Overlap-Add method */
@@ -643,7 +707,7 @@ void EQAudioProcessor::applyIIRFilter(juce::AudioBuffer<float> &buffer)
 
         /* construct impulse response */
         coef = genIIRFilter(id);
-        h1 = { coef[2] / coef[3], coef[1] / coef[3], coef[0] / coef[3] };
+        h1 = { coef[2] / coef[3], coef[1] / coef[3], coef[0] / coef[3] }; 
         h2 = { coef[5] / coef[3], coef[4] / coef[3] };
 
         /* apply IIR filter */
@@ -666,26 +730,40 @@ void EQAudioProcessor::applyIIRFilter(juce::AudioBuffer<float> &buffer)
     }
 }
 
-std::array<float, 6> EQAudioProcessor::genIIRFilter(int id)
-{   
-    auto coef = std::array<float, 6> {0};
-    switch (id) {
-        case 2: case 3:
-            coef = juce::dsp::IIR::ArrayCoefficients<float>::makeNotch(getSampleRate(), f[id], Q[id]);
-            break;
-        case 4:
-            coef = juce::dsp::IIR::ArrayCoefficients<float>::makeLowShelf(getSampleRate(), f[id], Q[id], gain[id-4]);
-            break;
-        case 5:
-            coef = juce::dsp::IIR::ArrayCoefficients<float>::makeHighShelf(getSampleRate(), f[id], Q[id], gain[id-4]);
-            break;
-        case 6: case 7:
-            coef = juce::dsp::IIR::ArrayCoefficients<float>::makePeakFilter(getSampleRate(), f[id], Q[id], gain[id-4]);
-            break;
-    }
+void EQAudioProcessor::updateFilterAndFrequencyResponse(bool isFIRUpdated)
+{
+	if (isFIRUpdated) {
+		genFIRFilter();
+	}
+	else { //is IIR updated
+		juce::FloatVectorOperations::fill(&IIR_Response[0], 0.5, fftSize / 2);
+		for (int id = 2; id < 8; ++id) {
+			genIIRFilter(id);
+			juce::FloatVectorOperations::multiply(&IIR_Response[0], &IIR_Responses[id - 2][0], fftSize / 2);
+		}
+	}
 
-    /* generate frequency response */
-    // start from here
+	for (int i = 0; i < fftSize / 2; i++)
+	{
+		freqResponse[i] = IIR_Response[i] * (double)FIR_freq_response[i];
+	}
+}
 
-    return coef;
+int EQAudioProcessor::qToOrder(float q)
+{
+	auto map = [](float q)
+	{
+		return juce::jmap(q,
+			0.1f, 2.0f,
+			15.f, 255.f);
+	};
+
+	return ((int)map(q) % 2 == 1) ? (int)map(q) : (int)map(q) - 1;
+}
+
+float EQAudioProcessor::binToFreq(int binNum, double sr)
+{
+	float binWidth = sr / fftSize;
+	auto binFreq = binNum * binWidth;
+	return binFreq;
 }

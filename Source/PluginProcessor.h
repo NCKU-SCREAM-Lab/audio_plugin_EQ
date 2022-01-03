@@ -47,7 +47,8 @@ public:
 	static constexpr auto fftOrder = 10;
 	static constexpr auto fftSize = 1 << fftOrder;
 
-	std::vector<float> getFilterResponse() { return H_freq_total; }
+	//std::vector<float> getFilterResponse() { return FIR_freq_response; }
+	std::vector<double> getFilterResponse() { return freqResponse; }
 
 private:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
@@ -57,16 +58,16 @@ private:
     std::vector<float> Q { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     std::vector<float> gain { 0.0f, 0.0f, 0.0f, 0.0f };
 
-	std::array <float, 560> h = { 0.0 };
-	std::vector<float> w;  // window function
-	std::vector<float> fftData;
-	std::vector<float> H;
-	std::vector<float> H_freq;
-	std::vector<float> H_total;
-	std::vector<float> H_freq_total;
-
 	float* overlap;
 	juce::dsp::FFT forwardFFT;
+	std::vector<float> w;                    // window function
+	std::vector<float> fftData;
+	std::vector<double> frequencies;
+	std::vector<float> FIR_freq_response_c;  // FIR frequency response with complex value
+	std::vector<float> FIR_freq_response;    // FIR frequency response with only real value
+	std::vector<double> IIR_Response;
+	std::vector<std::vector<double>> IIR_Responses;
+	std::vector<double> freqResponse;
 
 	juce::Random random;
 
@@ -76,13 +77,17 @@ private:
 	void genAllPass();
 	void genLowPass();
 	void genHighPass();
-    
-	int qToOrder(float q);
+
+	std::array<float, 6> genIIRFilter(int);
 
     void applyFIRFilter(juce::AudioBuffer<float> &);
     void applyIIRFilter(juce::AudioBuffer<float> &);
 
-    std::array<float, 6> genIIRFilter(int);
+	void updateFilterAndFrequencyResponse(bool);
+
+	int qToOrder(float);
+	float binToFreq(int, double);
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQAudioProcessor);
 };

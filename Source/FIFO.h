@@ -323,7 +323,7 @@ public:
         
     }
     
-	void generateResponsePath(const std::vector<float>& renderData,
+	void generateResponsePath(const std::vector<double>& renderData,
 		juce::Rectangle<float> fftBounds,
 		int fftSize,
 		float binWidth,
@@ -334,7 +334,7 @@ public:
 		auto bottom = fftBounds.getHeight();
 		auto width = fftBounds.getWidth();
 
-		int numBins = (int)fftSize / 2;
+		int numBins = (int)fftSize/2;
 
 		PathType p;
 		p.preallocateSpace(3 * (int)fftBounds.getWidth());
@@ -352,7 +352,7 @@ public:
 
 		p.startNewSubPath(left, y);
 
-		const int pathResolution = 2;
+		const int pathResolution = 1;
 		for (int binNum = 1; binNum < numBins; binNum += pathResolution)
 		{
 			y = map(renderData[binNum]);
