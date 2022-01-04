@@ -646,6 +646,7 @@ void EQAudioProcessor::genIIRFilter()
 	std::vector<double> response;
 	response.resize(fftSize/2);
     juce::FloatVectorOperations::fill(&IIR_Response[0], 0.5, fftSize / 2);
+    coefs = {};
 
     for (int id = 2; id < 8; ++id) {
         if (!activate[id]) continue;
@@ -727,10 +728,9 @@ void EQAudioProcessor::applyIIRFilter(juce::AudioBuffer<float> &buffer)
         y = {0, 0};
 
         /* construct impulse response */
-        auto coef = coefs.back();
+        auto coef = coefs[j];
         h1 = { coef[2] / coef[3], coef[1] / coef[3], coef[0] / coef[3] }; 
         h2 = { coef[5] / coef[3], coef[4] / coef[3] };
-        coefs.pop_back();
 
         /* apply IIR filter */
         for (int i = 0; i < buffer.getNumSamples(); ++i) {
