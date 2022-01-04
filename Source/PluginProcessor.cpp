@@ -341,7 +341,7 @@ void EQAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Midi
 		buffer.setSample(1, i, value);
 	}*/
 	
-    updateParameters();
+    updateFilters();
     if (buffer.getSample(0, 0) && buffer.getSample(1, 0)) {
         applyFIRFilter(buffer);
         applyIIRFilter(buffer);
@@ -378,11 +378,12 @@ juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
     return new EQAudioProcessor();
 }
 
-void EQAudioProcessor::updateParameters()
+void EQAudioProcessor::updateFilters()
 {
 	bool isFIRUpdated = false;
 	bool isIIRUpdated = false;
 
+    /* update parameters */
     if (f[0] != tree.getRawParameterValue("lowpass1_f")->load()) {
         f[0] = tree.getRawParameterValue("lowpass1_f")->load();
         isFIRUpdated = true;
@@ -464,12 +465,20 @@ void EQAudioProcessor::updateParameters()
 		isIIRUpdated = true;
     }
 
+    /* update filters and frequency response */
 	if (isFIRUpdated) {
-		updateFilterAndFrequencyResponse(true);
+		genFIRFilter();
 	}
 	if (isIIRUpdated) {
-		updateFilterAndFrequencyResponse(false);
+		juce::FloatVectorOperations::fill(&IIR_Response[0], 0.5, fftSize / 2);
+		for (int id = 2; id < 8; ++id) {
+			genIIRFilter(id);
+			juce::FloatVectorOperations::multiply(&IIR_Response[0], &IIR_Responses[id - 2][0], fftSize / 2);
+		}
 	}
+
+	for (int i = 0; i < fftSize / 2; i++)
+		freqResponse[i] = IIR_Response[i] * (double)FIR_freq_response[i];
 }
 
 void EQAudioProcessor::genFIRFilter()
@@ -728,25 +737,6 @@ void EQAudioProcessor::applyIIRFilter(juce::AudioBuffer<float> &buffer)
             buffer.setSample(1, i, value);
         }
     }
-}
-
-void EQAudioProcessor::updateFilterAndFrequencyResponse(bool isFIRUpdated)
-{
-	if (isFIRUpdated) {
-		genFIRFilter();
-	}
-	else { //is IIR updated
-		juce::FloatVectorOperations::fill(&IIR_Response[0], 0.5, fftSize / 2);
-		for (int id = 2; id < 8; ++id) {
-			genIIRFilter(id);
-			juce::FloatVectorOperations::multiply(&IIR_Response[0], &IIR_Responses[id - 2][0], fftSize / 2);
-		}
-	}
-
-	for (int i = 0; i < fftSize / 2; i++)
-	{
-		freqResponse[i] = IIR_Response[i] * (double)FIR_freq_response[i];
-	}
 }
 
 int EQAudioProcessor::qToOrder(float q)

@@ -74,7 +74,7 @@ private:
 
 	juce::Random random;
 
-    void updateParameters();
+    void updateFilters();
     
     void genFIRFilter();
 	void genAllPass();
@@ -85,8 +85,6 @@ private:
 
     void applyFIRFilter(juce::AudioBuffer<float> &);
     void applyIIRFilter(juce::AudioBuffer<float> &);
-
-	void updateFilterAndFrequencyResponse(bool);
 
 	int qToOrder(float);
 	float binToFreq(int, double);
