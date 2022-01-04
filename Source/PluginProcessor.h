@@ -50,10 +50,13 @@ public:
 	//std::vector<float> getFilterResponse() { return FIR_freq_response; }
 	std::vector<double> getFilterResponse() { return freqResponse; }
 
+    void toggleActivate(int index) { activate[index] = !activate[index]; }
+
 private:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
 
     /* Order: [lowpass1, highpass1, notch1, notch2, ]lowshelf1, highshelf1, peak1, peak2 */
+    std::vector<bool> activate { false, false, false, false, false, false, false, false };
     std::vector<int> f { 0, 0, 0, 0, 0, 0, 0, 0 };
     std::vector<float> Q { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     std::vector<float> gain { 0.0f, 0.0f, 0.0f, 0.0f };

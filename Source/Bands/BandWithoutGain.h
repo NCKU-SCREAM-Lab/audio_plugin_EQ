@@ -21,10 +21,14 @@ public:
         : audioProcessor(p),
           slider(p, filterName.toLowerCase().replace(" ", "") + juce::String{id})
     {
+        filterId = id;
         label.setText(filterName, juce::dontSendNotification);
         label.setJustificationType(juce::Justification::centred);
+        activate.setClickingTogglesState(true);
+        activate.onClick = [this] { updateToggleState(&activate); };
         addAndMakeVisible(slider);
         addAndMakeVisible(label);
+        addAndMakeVisible(activate);
     }
 
     ~BandWithoutGain() override
@@ -42,6 +46,7 @@ public:
         auto area = getLocalBounds();
         label.setBounds(area.removeFromTop(15));
         slider.setBounds(area.reduced(4));
+        activate.setBounds(area.removeFromTop(25));
     }
 
 private:
@@ -49,4 +54,19 @@ private:
     SliderContainerWithoutGain slider;
 
     juce::Label label;
+    juce::ToggleButton activate { "activate" };
+
+    int filterId;
+
+    void updateToggleState(juce::Button* button)
+    {
+        juce::String labelText = label.getText().toLowerCase().replace(" ", "");
+        if (labelText.compare("lowpass") == 0) {
+            audioProcessor.toggleActivate(0);
+        } else if (labelText.compare("highpass") == 0) {
+            audioProcessor.toggleActivate(1);
+        } else if (labelText.compare("notch") == 0) {
+            audioProcessor.toggleActivate(filterId + 1);
+        }
+    }
 };
