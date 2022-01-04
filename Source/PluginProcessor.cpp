@@ -504,8 +504,8 @@ void EQAudioProcessor::genFIRFilter()
 	overlap = new float[order] { 0 };
 
 	genAllPass();
-	genLowPass();
-	genHighPass();
+    if (activate[0]) genLowPass();
+	if (activate[1]) genHighPass();
 }
 
 void EQAudioProcessor::genAllPass()
