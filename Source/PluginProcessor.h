@@ -50,7 +50,14 @@ public:
 	//std::vector<float> getFilterResponse() { return FIR_freq_response; }
 	std::vector<double> getFilterResponse() { return freqResponse; }
 
-    void toggleActivate(int index) { activate[index] = !activate[index]; }
+    void toggleActivate(int index)
+    { 
+        activate[index] = !activate[index];
+        if (index < 2)
+            isFIRUpdated = true;
+        else
+            isIIRUpdated = true;
+    }
 
 private:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> singleChannelSampleFifo {0};
@@ -75,6 +82,8 @@ private:
 	juce::Random random;
 
     void updateFilters();
+	bool isFIRUpdated = true;
+	bool isIIRUpdated = false;
     
     void genFIRFilter();
 	void genAllPass();

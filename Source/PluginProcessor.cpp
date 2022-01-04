@@ -380,94 +380,108 @@ juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
 
 void EQAudioProcessor::updateFilters()
 {
-	bool isFIRUpdated = false;
-	bool isIIRUpdated = false;
-
     /* update parameters */
-    if (f[0] != tree.getRawParameterValue("lowpass1_f")->load()) {
-        f[0] = tree.getRawParameterValue("lowpass1_f")->load();
-        isFIRUpdated = true;
+    if (activate[0]) {
+        if (f[0] != tree.getRawParameterValue("lowpass1_f")->load()) {
+            f[0] = tree.getRawParameterValue("lowpass1_f")->load();
+            isFIRUpdated = true;
+        }
+        if (Q[0] != tree.getRawParameterValue("lowpass1_q")->load()) {
+            Q[0] = tree.getRawParameterValue("lowpass1_q")->load();
+            isFIRUpdated = true;
+        }
     }
-    if (Q[0] != tree.getRawParameterValue("lowpass1_q")->load()) {
-        Q[0] = tree.getRawParameterValue("lowpass1_q")->load();
-        isFIRUpdated = true;
+    if (activate[1]) {
+        if (f[1] != tree.getRawParameterValue("highpass1_f")->load()) {
+            f[1] = tree.getRawParameterValue("highpass1_f")->load();
+            isFIRUpdated = true;
+        }
+        if (Q[1] != tree.getRawParameterValue("highpass1_q")->load()) {
+            Q[1] = tree.getRawParameterValue("highpass1_q")->load();
+            isFIRUpdated = true;
+        }
     }
-    if (f[1] != tree.getRawParameterValue("highpass1_f")->load()) {
-        f[1] = tree.getRawParameterValue("highpass1_f")->load();
-        isFIRUpdated = true;
+    if (activate[2]) {
+        if (f[2] != tree.getRawParameterValue("notch1_f")->load()) {
+            f[2] = tree.getRawParameterValue("notch1_f")->load();
+            isIIRUpdated = true;
+        }
+        if (Q[2] != tree.getRawParameterValue("notch1_q")->load()) {
+            Q[2] = tree.getRawParameterValue("notch1_q")->load();
+            isIIRUpdated = true;
+        }
     }
-    if (Q[1] != tree.getRawParameterValue("highpass1_q")->load()) {
-        Q[1] = tree.getRawParameterValue("highpass1_q")->load();
-        isFIRUpdated = true;
+    if (activate[3]) {
+        if (f[3] != tree.getRawParameterValue("notch2_f")->load()) {
+            f[3] = tree.getRawParameterValue("notch2_f")->load();
+            isIIRUpdated = true;
+        }
+        if (Q[3] != tree.getRawParameterValue("notch2_q")->load()) {
+            Q[3] = tree.getRawParameterValue("notch2_q")->load();
+            isIIRUpdated = true;
+        }
     }
-    if (f[2] != tree.getRawParameterValue("notch1_f")->load()) {
-        f[2] = tree.getRawParameterValue("notch1_f")->load();
-		isIIRUpdated = true;
+    if (activate[4]) {
+        if (f[4] != tree.getRawParameterValue("lowshelf1_f")->load()) {
+            f[4] = tree.getRawParameterValue("lowshelf1_f")->load();
+            isIIRUpdated = true;
+        }
+        if (Q[4] != tree.getRawParameterValue("lowshelf1_q")->load()) {
+            Q[4] = tree.getRawParameterValue("lowshelf1_q")->load();
+            isIIRUpdated = true;
+        }
+        if (gain[0] != tree.getRawParameterValue("lowshelf1_gain")->load()) {
+            gain[0] = tree.getRawParameterValue("lowshelf1_gain")->load();
+            isIIRUpdated = true;
+        }
     }
-    if (Q[2] != tree.getRawParameterValue("notch1_q")->load()) {
-        Q[2] = tree.getRawParameterValue("notch1_q")->load();
-		isIIRUpdated = true;
+    if (activate[5]) {
+        if (f[5] != tree.getRawParameterValue("highshelf1_f")->load()) {
+            f[5] = tree.getRawParameterValue("highshelf1_f")->load();
+            isIIRUpdated = true;
+        }
+        if (Q[5] != tree.getRawParameterValue("highshelf1_q")->load()) {
+            Q[5] = tree.getRawParameterValue("highshelf1_q")->load();
+            isIIRUpdated = true;
+        }
+        if (gain[1] != tree.getRawParameterValue("highshelf1_gain")->load()) {
+            gain[1] = tree.getRawParameterValue("highshelf1_gain")->load();
+            isIIRUpdated = true;
+        }
     }
-    if (f[3] != tree.getRawParameterValue("notch2_f")->load()) {
-        f[3] = tree.getRawParameterValue("notch2_f")->load();
-		isIIRUpdated = true;
+    if (activate[6]) {
+        if (f[6] != tree.getRawParameterValue("peak1_f")->load()) {
+            f[6] = tree.getRawParameterValue("peak1_f")->load();
+            isIIRUpdated = true;
+        }
+        if (Q[6] != tree.getRawParameterValue("peak1_q")->load()) {
+            Q[6] = tree.getRawParameterValue("peak1_q")->load();
+            isIIRUpdated = true;
+        }
+        if (gain[2] != tree.getRawParameterValue("peak1_gain")->load()) {
+            gain[2] = tree.getRawParameterValue("peak1_gain")->load();
+            isIIRUpdated = true;
+        }
     }
-    if (Q[3] != tree.getRawParameterValue("notch2_q")->load()) {
-        Q[3] = tree.getRawParameterValue("notch2_q")->load();
-		isIIRUpdated = true;
+    if (activate[7]) {
+        if (f[7] != tree.getRawParameterValue("peak2_f")->load()) {
+            f[7] = tree.getRawParameterValue("peak2_f")->load();
+            isIIRUpdated = true;
+        }
+        if (Q[7] != tree.getRawParameterValue("peak2_q")->load()) {
+            Q[7] = tree.getRawParameterValue("peak2_q")->load();
+            isIIRUpdated = true;
+        }
+        if (gain[3] != tree.getRawParameterValue("peak2_gain")->load()) {
+            gain[3] = tree.getRawParameterValue("peak2_gain")->load();
+            isIIRUpdated = true;
+        }
     }
-    if (f[4] != tree.getRawParameterValue("lowshelf1_f")->load()) {
-        f[4] = tree.getRawParameterValue("lowshelf1_f")->load();
-		isIIRUpdated = true;
-    }
-    if (Q[4] != tree.getRawParameterValue("lowshelf1_q")->load()) {
-        Q[4] = tree.getRawParameterValue("lowshelf1_q")->load();
-		isIIRUpdated = true;
-    }
-    if (gain[0] != tree.getRawParameterValue("lowshelf1_gain")->load()) {
-        gain[0] = tree.getRawParameterValue("lowshelf1_gain")->load();
-		isIIRUpdated = true;
-    }
-    if (f[5] != tree.getRawParameterValue("highshelf1_f")->load()) {
-        f[5] = tree.getRawParameterValue("highshelf1_f")->load();
-		isIIRUpdated = true;
-    }
-    if (Q[5] != tree.getRawParameterValue("highshelf1_q")->load()) {
-        Q[5] = tree.getRawParameterValue("highshelf1_q")->load();
-		isIIRUpdated = true;
-    }
-    if (gain[1] != tree.getRawParameterValue("highshelf1_gain")->load()) {
-        gain[1] = tree.getRawParameterValue("highshelf1_gain")->load();
-		isIIRUpdated = true;
-    }
-    if (f[6] != tree.getRawParameterValue("peak1_f")->load()) {
-        f[6] = tree.getRawParameterValue("peak1_f")->load();
-		isIIRUpdated = true;
-    }
-    if (Q[6] != tree.getRawParameterValue("peak1_q")->load()) {
-        Q[6] = tree.getRawParameterValue("peak1_q")->load();
-		isIIRUpdated = true;
-    }
-    if (gain[2] != tree.getRawParameterValue("peak1_gain")->load()) {
-        gain[2] = tree.getRawParameterValue("peak1_gain")->load();
-		isIIRUpdated = true;
-    }
-    if (f[7] != tree.getRawParameterValue("peak2_f")->load()) {
-        f[7] = tree.getRawParameterValue("peak2_f")->load();
-		isIIRUpdated = true;
-    }
-    if (Q[7] != tree.getRawParameterValue("peak2_q")->load()) {
-        Q[7] = tree.getRawParameterValue("peak2_q")->load();
-		isIIRUpdated = true;
-    }
-    if (gain[3] != tree.getRawParameterValue("peak2_gain")->load()) {
-        gain[3] = tree.getRawParameterValue("peak2_gain")->load();
-		isIIRUpdated = true;
-    }
-
+    
     /* update filters and frequency response */
 	if (isFIRUpdated) {
 		genFIRFilter();
+        isFIRUpdated = false;
 	}
 	if (isIIRUpdated) {
 		juce::FloatVectorOperations::fill(&IIR_Response[0], 0.5, fftSize / 2);
@@ -475,6 +489,7 @@ void EQAudioProcessor::updateFilters()
 			genIIRFilter(id);
 			juce::FloatVectorOperations::multiply(&IIR_Response[0], &IIR_Responses[id - 2][0], fftSize / 2);
 		}
+        isIIRUpdated = false;
 	}
 
 	for (int i = 0; i < fftSize / 2; i++)
