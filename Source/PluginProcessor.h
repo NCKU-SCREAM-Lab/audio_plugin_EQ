@@ -78,6 +78,7 @@ private:
 	std::vector<double> IIR_Response;
 	std::vector<std::vector<double>> IIR_Responses;
 	std::vector<double> freqResponse;
+    std::vector<std::array<float, 6>> coefs;
 
 	juce::Random random;
 
@@ -90,7 +91,7 @@ private:
 	void genLowPass();
 	void genHighPass();
 
-	std::array<float, 6> genIIRFilter(int);
+    void genIIRFilter();
 
     void applyFIRFilter(juce::AudioBuffer<float> &);
     void applyIIRFilter(juce::AudioBuffer<float> &);
