@@ -533,7 +533,6 @@ void EQAudioProcessor::genLowPass()
 	float impulse_response_sum = 0.0f;
 
 	/* Construct impulse response of Low Pass Filter (FIR) */
-
 	std::array <float, 560> h = { 0.0 };
 	for (int i = -(order - 1) / 2, j = 0; i <= order / 2; i++, j++) {
 		if (i != 0)
@@ -721,7 +720,6 @@ void EQAudioProcessor::applyIIRFilter(juce::AudioBuffer<float> &buffer)
     std::vector <float> h1; // impulse response for input
     std::vector <float> h2; // impulse response for output
 
-    /* Call JUCE API to get coefficients of the corresponding filter */
     for (int j = 0; j < coefs.size(); ++j) {
         /* initialize the first few input and output signal to 0 */
         x = {0, 0, 0};

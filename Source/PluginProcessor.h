@@ -47,7 +47,6 @@ public:
 	static constexpr auto fftOrder = 10;
 	static constexpr auto fftSize = 1 << fftOrder;
 
-	//std::vector<float> getFilterResponse() { return FIR_freq_response; }
 	std::vector<double> getFilterResponse() { return freqResponse; }
 
     void toggleActivate(int index)
